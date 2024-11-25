@@ -7,7 +7,7 @@ The changes in the script, let the train run **automatically** resume itself if 
 
 ## The following will show the part which has been modified
 
-```
+```ruby
     # Start training
     t0 = time.time()
     nw = max(round(hyp['warmup_epochs'] * nb), 1000)  # number of warmup iterations, max(3 epochs, 1k iterations)
@@ -117,7 +117,6 @@ The changes in the script, let the train run **automatically** resume itself if 
                     elif plots and ni == 10 and wandb_logger.wandb:
                         wandb_logger.log({"Mosaics": [wandb_logger.wandb.Image(str(x), caption=x.name) for x in
                                                     save_dir.glob('train*.jpg') if x.exists()]})
-//highlight-start
 
         except torch.cuda.OutOfMemoryError:
             print("Out of memory error encountered. Attempting to resume from last checkpoint...")
@@ -143,11 +142,40 @@ The changes in the script, let the train run **automatically** resume itself if 
             epoch = ckpt['epoch']
             del ckpt
             continue  # Continue to the next epoch
-//highlight-end
 
             # end batch ------------------------------------------------------------------------------------------------
         # end epoch ----------------------------------------------------------------------------------------------------
 
 ```
 
-## 
+## The added parts are:
+```
+try:
+```
+
+```
+except torch.cuda.OutOfMemoryError:
+            print("Out of memory error encountered. Attempting to resume from last checkpoint...")
+            torch.cuda.empty_cache()
+            if ema:
+                ema.update(model)
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'ema_state_dict': ema.ema.state_dict() if ema else None,
+                'updates': ema.updates if ema else None,
+                'best_fitness': best_fitness,
+                'training_results': results_file.read_text() if results_file.exists() else None,
+            }, wdir / 'last.pt')
+            time.sleep(10)  # Wait for 10 seconds
+            ckpt = torch.load(wdir / 'last.pt', map_location=device)
+            model.load_state_dict(ckpt['model_state_dict'])
+            optimizer.load_state_dict(ckpt['optimizer_state_dict'])
+            if ema:
+                ema.ema.load_state_dict(ckpt['ema_state_dict'])
+                ema.updates = ckpt['updates']
+            epoch = ckpt['epoch']
+            del ckpt
+            continue  # Continue to the next epoch
+```
