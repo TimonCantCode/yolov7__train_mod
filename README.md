@@ -5,7 +5,7 @@ This is a custom version of the train.py script which is used to train your yolo
 The changes in the script, let the train run **automatically** resume itself if running out of memory.
 
 
-## The following will show the part which was modified and I highlighted the added code
+## The following will show the part which has been modified
 
 ```
     # Start training
@@ -24,7 +24,7 @@ The changes in the script, let the train run **automatically** resume itself if 
                 f'Starting training for {epochs} epochs...')
     torch.save(model, wdir / 'init.pt')
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
-        **try:**
+        try:
             model.train()
 
             # Update image weights (optional)
@@ -117,7 +117,7 @@ The changes in the script, let the train run **automatically** resume itself if 
                     elif plots and ni == 10 and wandb_logger.wandb:
                         wandb_logger.log({"Mosaics": [wandb_logger.wandb.Image(str(x), caption=x.name) for x in
                                                     save_dir.glob('train*.jpg') if x.exists()]})
-highlight-start
+//highlight-start
 
         except torch.cuda.OutOfMemoryError:
             print("Out of memory error encountered. Attempting to resume from last checkpoint...")
@@ -143,9 +143,11 @@ highlight-start
             epoch = ckpt['epoch']
             del ckpt
             continue  # Continue to the next epoch
-highlight-end
+//highlight-end
 
             # end batch ------------------------------------------------------------------------------------------------
         # end epoch ----------------------------------------------------------------------------------------------------
 
 ```
+
+## 
