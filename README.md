@@ -24,7 +24,7 @@ The changes in the script, let the train run **automatically** resume itself if 
                 f'Starting training for {epochs} epochs...')
     torch.save(model, wdir / 'init.pt')
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
-        ```try:
+        **try:**
             model.train()
 
             # Update image weights (optional)
