@@ -152,7 +152,7 @@ The changes in the script, let the train run **automatically** resume itself if 
 ```ruby
 try:
 ```
-## &
+### &
 ```ruby
 except torch.cuda.OutOfMemoryError:
             print("Out of memory error encountered. Attempting to resume from last checkpoint...")
